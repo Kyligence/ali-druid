@@ -1700,7 +1700,25 @@ public class SQLExprParser extends SQLParser {
             hash_lower = identifierExpr.nameHashCode64();
 
             if (allowIdentifierMethod) {
-                if (hash_lower == FnvHash.Constants.TRIM) {
+                if (hash_lower == FnvHash.Constants.FLOOR && lexer.token == Token.CAST) {
+                    methodInvokeExpr = new SQLMethodInvokeExpr(methodName, hash_lower);
+                    exprList(methodInvokeExpr.getArguments(), methodInvokeExpr);
+                    SQLExpr tmp = methodInvokeExpr.getArguments().get(0);
+                    String literal = null;
+                    if (tmp instanceof SQLCastExpr) {
+                        literal = tmp.toString();
+                    }
+                    if (lexer.token == Token.TO) {
+                        lexer.nextToken();
+                        String type = lexer.stringVal();
+                        expr = new SQLFloorExpr(literal, type);
+                        lexer.nextToken();
+                    } else {
+                        expr = new SQLFloorExpr(literal);
+                    }
+                    accept(Token.RPAREN);
+                    return expr;
+                } else if (hash_lower == FnvHash.Constants.TRIM) {
                     if (lexer.identifierEquals(FnvHash.Constants.LEADING)) {
                         trimOption = lexer.stringVal();
                         lexer.nextToken();
@@ -5700,7 +5718,33 @@ public class SQLExprParser extends SQLParser {
             long hash_lower = lexer.hash_lower();
             lexer.nextTokenComma();
 
-            if (hash_lower == FnvHash.Constants.CONNECT_BY_ROOT) {
+            if (hash_lower == FnvHash.Constants.FLOOR && dbType == DbType.hive) {
+                lexer.nextToken();
+                if (lexer.identifierEquals(FnvHash.Constants.DATE) || lexer.identifierEquals(FnvHash.Constants.TIMESTAMP)) {
+                    lexer.nextToken();
+                    String literal = lexer.stringVal();
+                    String number = lexer.numberString();
+                    lexer.nextToken();
+                    if (lexer.token == Token.TO) {
+                        lexer.nextToken();
+                        String type = lexer.stringVal();
+                        expr = new SQLFloorExpr(literal, type);
+                        lexer.nextToken();
+                    } else {
+                        expr = new SQLFloorExpr(number);
+                    }
+                    accept(Token.RPAREN);
+                } else if (lexer.token == Token.CAST) {
+                    expr = new SQLIdentifierExpr(ident, hash_lower);
+                    expr = this.methodRest(expr, false);
+                    expr = this.exprRest(expr);
+                } else {
+                    String number = lexer.numberString();
+                    expr = new SQLFloorExpr(number);
+                    lexer.nextToken();
+                    accept(Token.RPAREN);
+                }
+            } else if (hash_lower == FnvHash.Constants.CONNECT_BY_ROOT) {
                 connectByRoot = lexer.token != Token.LPAREN;
                 if (connectByRoot) {
                     expr = new SQLIdentifierExpr(lexer.stringVal());

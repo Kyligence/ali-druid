@@ -2713,4 +2713,12 @@ public interface SQLASTVisitor {
 
     }
 
+    default boolean visit(SQLFloorExpr x) {
+        return true;
+    }
+
+    default void endVisit(SQLFloorExpr x) {
+
+    }
+
 }
