@@ -1700,21 +1700,18 @@ public class SQLExprParser extends SQLParser {
             hash_lower = identifierExpr.nameHashCode64();
 
             if (allowIdentifierMethod) {
-                if (hash_lower == FnvHash.Constants.FLOOR && lexer.token == Token.CAST) {
+                if (hash_lower == FnvHash.Constants.FLOOR_DATETIME && lexer.token == Token.CAST) {
+                    //FLOOR_DATETIME(cast(`CAL_DT` as timestamp), 'DAY')
                     methodInvokeExpr = new SQLMethodInvokeExpr(methodName, hash_lower);
                     exprList(methodInvokeExpr.getArguments(), methodInvokeExpr);
-                    SQLExpr tmp = methodInvokeExpr.getArguments().get(0);
-                    String literal = null;
-                    if (tmp instanceof SQLCastExpr) {
-                        literal = tmp.toString();
-                    }
-                    if (lexer.token == Token.TO) {
-                        lexer.nextToken();
-                        String type = lexer.stringVal();
-                        expr = new SQLFloorExpr(literal, type);
-                        lexer.nextToken();
+                    SQLExpr tmp1 = methodInvokeExpr.getArguments().get(0);
+                    SQLExpr tmp2 = methodInvokeExpr.getArguments().get(1);
+                    String timeUnit = tmp2.toString();
+                    if (tmp1 instanceof SQLCastExpr) {
+                        expr = new SQLFloorExpr(tmp1, timeUnit);
                     } else {
-                        expr = new SQLFloorExpr(literal);
+                        String value = tmp1.toString();
+                        expr = new SQLFloorExpr(value, timeUnit, false);
                     }
                     accept(Token.RPAREN);
                     return expr;
@@ -5718,26 +5715,29 @@ public class SQLExprParser extends SQLParser {
             long hash_lower = lexer.hash_lower();
             lexer.nextTokenComma();
 
-            if (hash_lower == FnvHash.Constants.FLOOR && dbType == DbType.hive) {
+            if (hash_lower == FnvHash.Constants.FLOOR_DATETIME && dbType == DbType.hive) {
                 lexer.nextToken();
                 if (lexer.identifierEquals(FnvHash.Constants.DATE) || lexer.identifierEquals(FnvHash.Constants.TIMESTAMP)) {
                     lexer.nextToken();
                     String literal = lexer.stringVal();
-                    String number = lexer.numberString();
                     lexer.nextToken();
-                    if (lexer.token == Token.TO) {
-                        lexer.nextToken();
-                        String type = lexer.stringVal();
-                        expr = new SQLFloorExpr(literal, type);
-                        lexer.nextToken();
-                    } else {
-                        expr = new SQLFloorExpr(number);
-                    }
+                    accept(Token.COMMA);
+                    String timeUnit = lexer.stringVal();
+                    expr = new SQLFloorExpr(literal, timeUnit, true);
+                    lexer.nextToken();
                     accept(Token.RPAREN);
                 } else if (lexer.token == Token.CAST) {
                     expr = new SQLIdentifierExpr(ident, hash_lower);
                     expr = this.methodRest(expr, false);
                     expr = this.exprRest(expr);
+                } else if (lexer.token == Token.IDENTIFIER) {
+                    String literal = lexer.stringVal();
+                    lexer.nextToken();
+                    accept(Token.COMMA);
+                    String timeUnit = lexer.stringVal();
+                    expr = new SQLFloorExpr(literal, timeUnit, false);
+                    lexer.nextToken();
+                    accept(Token.RPAREN);
                 } else {
                     String number = lexer.numberString();
                     expr = new SQLFloorExpr(number);

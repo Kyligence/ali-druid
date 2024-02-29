@@ -884,7 +884,9 @@ public final class FnvHash {
         long ATAN2 = fnv1a_64_lower("ATAN2");
         long COS = fnv1a_64_lower("COS");
         long FLOOR = fnv1a_64_lower("FLOOR");
+        long FLOOR_DATETIME = fnv1a_64_lower("FLOOR_DATETIME");
         long CEIL = fnv1a_64_lower("CEIL");
+        long CEIL_DATETIME = fnv1a_64_lower("CEIL_DATETIME");
         long SQRT = fnv1a_64_lower("SQRT");
         long LEAD = fnv1a_64_lower("LEAD");
         long LAG = fnv1a_64_lower("LAG");
