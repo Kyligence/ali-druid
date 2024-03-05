@@ -29,13 +29,13 @@ public class SQLFloorExpr extends SQLExprImpl implements SQLValuableExpr {
 
     private final boolean needQuote;
 
-    private SQLExpr castSqlExpr;
+    private SQLExpr sqlExpr;
 
     public SQLFloorExpr(String value, String timeUnit, boolean needQuote, SQLExpr castSqlExpr) {
         this.value = value;
         this.timeUnit = timeUnit;
         this.needQuote = needQuote;
-        this.castSqlExpr = castSqlExpr;
+        this.sqlExpr = castSqlExpr;
     }
 
     public SQLFloorExpr(String value, String timeUnit, boolean needQuote) {
@@ -45,7 +45,7 @@ public class SQLFloorExpr extends SQLExprImpl implements SQLValuableExpr {
     }
 
     public SQLFloorExpr(SQLExpr sqlExpr, String timeUnit) {
-        this.castSqlExpr = sqlExpr;
+        this.sqlExpr = sqlExpr;
         this.timeUnit = timeUnit;
         this.needQuote = false;
     }
@@ -58,8 +58,8 @@ public class SQLFloorExpr extends SQLExprImpl implements SQLValuableExpr {
         return needQuote;
     }
 
-    public SQLExpr getCastSqlExpr() {
-        return castSqlExpr;
+    public SQLExpr getSqlExpr() {
+        return sqlExpr;
     }
 
     @Override
@@ -67,12 +67,12 @@ public class SQLFloorExpr extends SQLExprImpl implements SQLValuableExpr {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SQLFloorExpr that = (SQLFloorExpr) o;
-        return Objects.equals(value, that.value) && Objects.equals(timeUnit, that.timeUnit) && Objects.equals(castSqlExpr, that.castSqlExpr);
+        return Objects.equals(value, that.value) && Objects.equals(timeUnit, that.timeUnit) && Objects.equals(sqlExpr, that.sqlExpr);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value, timeUnit, castSqlExpr);
+        return Objects.hash(value, timeUnit, sqlExpr);
     }
 
     public String getTimeUnit() {
@@ -87,7 +87,7 @@ public class SQLFloorExpr extends SQLExprImpl implements SQLValuableExpr {
 
     @Override
     public SQLExpr clone() {
-        return new SQLFloorExpr(value, timeUnit, needQuote, castSqlExpr);
+        return new SQLFloorExpr(value, timeUnit, needQuote, sqlExpr);
     }
 
     @Override

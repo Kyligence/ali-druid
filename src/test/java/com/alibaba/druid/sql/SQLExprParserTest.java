@@ -15,6 +15,7 @@
  */
 package com.alibaba.druid.sql;
 
+import com.alibaba.druid.DbType;
 import org.junit.Assert;
 import junit.framework.TestCase;
 
@@ -37,5 +38,11 @@ public class SQLExprParserTest extends TestCase {
         
         Assert.assertEquals("AGE", left.getName());
         Assert.assertEquals(5, right.getNumber().intValue());
+    }
+
+    public void test() {
+        SQLExprParser exprParser = new SQLExprParser("select FLOOR_DATETIME((cast(cast(`DWS_DIM_TIME_34_PERIOD_DATE` as varchar) as date)), 'MONTH')", DbType.hive);
+        exprParser.expr();
+        System.out.println(exprParser);
     }
 }

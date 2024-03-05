@@ -1700,19 +1700,13 @@ public class SQLExprParser extends SQLParser {
             hash_lower = identifierExpr.nameHashCode64();
 
             if (allowIdentifierMethod) {
-                if (hash_lower == FnvHash.Constants.FLOOR_DATETIME && lexer.token == Token.CAST) {
-                    //FLOOR_DATETIME(cast(`CAL_DT` as timestamp), 'DAY')
+                if (hash_lower == FnvHash.Constants.FLOOR_DATETIME) {
                     methodInvokeExpr = new SQLMethodInvokeExpr(methodName, hash_lower);
                     exprList(methodInvokeExpr.getArguments(), methodInvokeExpr);
                     SQLExpr tmp1 = methodInvokeExpr.getArguments().get(0);
                     SQLExpr tmp2 = methodInvokeExpr.getArguments().get(1);
                     String timeUnit = tmp2.toString();
-                    if (tmp1 instanceof SQLCastExpr) {
-                        expr = new SQLFloorExpr(tmp1, timeUnit);
-                    } else {
-                        String value = tmp1.toString();
-                        expr = new SQLFloorExpr(value, timeUnit, false);
-                    }
+                    expr = new SQLFloorExpr(tmp1, timeUnit);
                     accept(Token.RPAREN);
                     return expr;
                 } else if (hash_lower == FnvHash.Constants.TRIM) {
@@ -5726,10 +5720,6 @@ public class SQLExprParser extends SQLParser {
                     expr = new SQLFloorExpr(literal, timeUnit, true);
                     lexer.nextToken();
                     accept(Token.RPAREN);
-                } else if (lexer.token == Token.CAST) {
-                    expr = new SQLIdentifierExpr(ident, hash_lower);
-                    expr = this.methodRest(expr, false);
-                    expr = this.exprRest(expr);
                 } else if (lexer.token == Token.IDENTIFIER) {
                     String literal = lexer.stringVal();
                     lexer.nextToken();
@@ -5739,10 +5729,9 @@ public class SQLExprParser extends SQLParser {
                     lexer.nextToken();
                     accept(Token.RPAREN);
                 } else {
-                    String number = lexer.numberString();
-                    expr = new SQLFloorExpr(number);
-                    lexer.nextToken();
-                    accept(Token.RPAREN);
+                    expr = new SQLIdentifierExpr(ident, hash_lower);
+                    expr = this.methodRest(expr, false);
+                    expr = this.exprRest(expr);
                 }
             } else if (hash_lower == FnvHash.Constants.CONNECT_BY_ROOT) {
                 connectByRoot = lexer.token != Token.LPAREN;
